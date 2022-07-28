@@ -17,8 +17,10 @@
 ./cleanup ; spark-submit src/create_data_frame_read_write_parquet_and_csv.py
 ```
 
-
-
+# Use flatMap() and reduce() to execute jobs in parallel, with a broadcast variable for a lookup table
+```console
+spark-submit src/flat_map_with_broadcast_var.py
+```
 
 ## Clean up output files which were created by demos.
 ```console
