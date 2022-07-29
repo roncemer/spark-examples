@@ -12,17 +12,20 @@
    pip3 install pyspark
    ```
 
-## Create a DataFrame with a schema and some data; create a temporary view; query the temporary view; save to single-partition Parquet file; read Parquet; save to CSV; read CSV
+## Basic DataFrame handling, reading and writing Parquet and CSV files
+This Spark job creates a DataFrame with a schema and some data, create a temporary view, queries the temporary view, saves the results to a single-partition Parquet file, reads the Parquet file, saves to a single-partition CSV file, and reads the CSV file.
 ```console
 ./cleanup ; spark-submit src/create_data_frame_read_write_parquet_and_csv.py
 ```
 
-# Use flatMap() and reduce() to execute jobs in parallel, with a broadcast variable for a lookup table
+# Executing calculations in parallel
+This Spark job uses flatMap() to execute calculation jobs in parallel across a Spark cluster, passing a lookup table to the workers as a broadcast variable.
 ```console
 spark-submit src/flat_map_with_broadcast_var.py
 ```
 
-## Clean up output files which were created by demos.
+## Clean up output files which were created by demos
+This script cleans up the files which are created by demos which save files.  It should be run before any demos which creates output files.
 ```console
 ./cleanup
 ```
