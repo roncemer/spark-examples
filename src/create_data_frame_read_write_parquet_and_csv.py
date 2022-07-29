@@ -1,10 +1,14 @@
+import sys
+import os
+import re
 import pyspark
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
 from pyspark.sql.types import StructType, StructField, StringType, LongType
 
 # Create a Spark session; get its Spark context.
-spark = SparkSession.builder.master("local[1]").appName('test').getOrCreate()
+appName = re.sub("\.py$", "", os.path.basename(__file__))
+spark = SparkSession.builder.appName(re.sub("\.py$", "", os.path.basename(__file__))).getOrCreate()
 sc = SparkContext.getOrCreate()
 
 # Build a DataFrame with a schema and some data.
