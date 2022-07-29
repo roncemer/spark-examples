@@ -1,3 +1,4 @@
+import sys
 import pyspark
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
@@ -25,27 +26,27 @@ bonus_rates_by_dept = {
     "maintenance": 2.50,
     "management": 20.00,
     "engineering": 10.00,
+    "default": 1.25,
 }
-
-default_bonus_rate = 1.25
 
 # Create broadcast variables from the bonus rates.
 broadcast_bonus_rates_by_dept = sc.broadcast(bonus_rates_by_dept)
-broadcast_default_bonus_rate = sc.broadcast(default_bonus_rate)
 
 # Define a function to calculate an employee's yearly bonus.
 # This function will be executed in parallel across all nodes of the cluster, and will be called once per employee.
 # NOTE: To create a DataFrame in which bonus is a DecimalType, this function must return bonus as a decimal, not a float.
 #       Returning bonus as a float will result in Spark throwing an error because it doesn't know how to automatically
 #       convert a float value to a decimal value when creating a DataFrame.
-def calc_employee_bonus_rate(empl, bonus_rates_by_dept, default_bonus_rate):
+def calc_employee_bonus_rate(empl, bonus_rates_by_dept):
     dept = empl["dept"]
-    bonus_rate = bonus_rates_by_dept[dept] if dept in bonus_rates_by_dept else default_bonus_rate
-    return [{"name": empl["name"], "bonus": Context(prec=2).create_decimal(round(empl["yearly_gross_pay"] * bonus_rate / 100.0, 2))}]
+    bonus_rate = bonus_rates_by_dept[dept] if dept in bonus_rates_by_dept else bonus_rates_by_dept["default"]
+    bonus = round(empl["yearly_gross_pay"] * bonus_rate / 100.0, 2)
+    print("DEBUG: calc_employee_bonus_rate() name: %s  bonus: %.2f" % (empl["name"], bonus), file=sys.stderr)
+    return [{"name": empl["name"], "bonus": Context(prec=2).create_decimal(bonus)}]
 
 # Convert the list of employees to an RDD, and use flatMap() to execute the calculations in parallel across the Spark cluster.
 employeesRDD = spark.sparkContext.parallelize(employees)
-bonusesRDD = employeesRDD.flatMap(lambda empl: calc_employee_bonus_rate(empl, broadcast_bonus_rates_by_dept.value, broadcast_default_bonus_rate.value))
+bonusesRDD = employeesRDD.flatMap(lambda empl: calc_employee_bonus_rate(empl, broadcast_bonus_rates_by_dept.value))
 
 # Convert the bonuses RDD to a DataFrame with a specific schema, show the schema, and show the final results.
 bonusesDF = spark.createDataFrame(
