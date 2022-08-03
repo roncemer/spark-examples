@@ -56,12 +56,15 @@ joinedDF.printSchema()
 joinedDF.show(n=10000)
 
 # Build the groups.
-groups = []
+groupsRDD = None
 for g in groupsDF.collect():
     edf = spark.sql(f"select * from events where group_no = {g.group_no} order by event_time")
     events = edf.rdd.map(lambda e: {"event_time": e.event_time, "group_no": e.group_no, "weight": float(e.weight)}).collect()
-    groups.append({"group_no": g.group_no, "total_value": float(g.total_value), "events": events})
-groupsRDD = spark.sparkContext.parallelize(groups)
+    newGroupRDD = spark.sparkContext.parallelize([{"group_no": g.group_no, "total_value": float(g.total_value), "events": events}])
+    if groupsRDD is None:
+        groupsRDD = newGroupRDD
+    else:
+        groupsRDD = groupsRDD.union(newGroupRDD)
 
 def distribute_total_value(group):
     total_value = group["total_value"]
