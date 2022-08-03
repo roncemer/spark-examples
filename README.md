@@ -25,7 +25,7 @@ This Spark job uses flatMap() to execute calculation jobs in parallel across a S
 spark-submit src/flat_map_with_broadcast_var.py
 ```
 
-## Process groups of events, in parallel, using flatMap()
+## Process groups of events in parallel, using flatMap()
 This Spark job takes as input a number of groups and their corresponding total values, and a list of events, with each event belonging to one group.  It then uses flatMap() to execute calculation jobs in parallel across a Spark cluster, where each job corresponds to a single group.  Each job distributes the group's total value across the events in that group based on each event's weight.
 ```console
 spark-submit src/flat_map_group_processing.py
