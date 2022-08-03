@@ -18,9 +18,10 @@ for ($i = 0; $i < 1000; $i++) {
 usort($events, 'event_time_comparator');
 
 $fp = fopen(dirname(__DIR__).'/flat_map_group_processing_events.csv.new', 'w');
-fputs($fp, "event_time,group_no,weight\n");
+fputs($fp, "id,event_time,group_no,weight\n");
+$id = 100000 + mt_rand(1, 100000);
 foreach ($events as $event) {
-    fprintf($fp, "%s,%d,%.4f\n", $event->event_time, $event->group_no, $event->weight);
+    fprintf($fp, "%d,%s,%d,%.4f\n", $id++, $event->event_time, $event->group_no, $event->weight);
 }
 fclose($fp);
 

@@ -30,7 +30,8 @@ groupsDF.show()
 # Read events CSV file; adjust its schema; show its contents.
 eventsDF = spark.read.option("header", True).csv(os.path.join(test_input_dir, "flat_map_group_processing_events.csv"))
 eventsDF = (
-    eventsDF.withColumn("event_time_new", eventsDF["event_time"].cast(TimestampType())).drop("event_time").withColumnRenamed("event_time_new", "event_time")
+    eventsDF.withColumn("id_new", eventsDF["id"].cast(IntegerType())).drop("id").withColumnRenamed("id_new", "id")
+    .withColumn("event_time_new", eventsDF["event_time"].cast(TimestampType())).drop("event_time").withColumnRenamed("event_time_new", "event_time")
     .withColumn("group_no_new", eventsDF["group_no"].cast(IntegerType())).drop("group_no").withColumnRenamed("group_no_new", "group_no")
     .withColumn("weight_new", eventsDF["weight"].cast(DecimalType(16, 4))).drop("weight").withColumnRenamed("weight_new", "weight")
 )
@@ -48,7 +49,7 @@ joinedDF = spark.sql("""
 select e.*, g.total_value
 from events e
 inner join groups g on g.group_no = e.group_no
-order by e.group_no, e.event_time
+order by e.group_no, e.event_time, e.id
 """)
 print("Joined:")
 joinedDF.printSchema()
@@ -57,8 +58,8 @@ joinedDF.show(n=10000)
 # Build the groups.
 groupsRDD = None
 for g in groupsDF.collect():
-    edf = spark.sql(f"select * from events where group_no = {g.group_no} order by event_time")
-    events = edf.rdd.map(lambda e: {"event_time": e.event_time, "group_no": e.group_no, "weight": float(e.weight)}).collect()
+    edf = spark.sql(f"select * from events where group_no = {g.group_no} order by event_time, id")
+    events = edf.rdd.map(lambda e: {"id": e.id, "event_time": e.event_time, "group_no": e.group_no, "weight": float(e.weight)}).collect()
     newGroupRDD = spark.sparkContext.parallelize([{"group_no": g.group_no, "total_value": float(g.total_value), "events": events}])
     if groupsRDD is None:
         groupsRDD = newGroupRDD
@@ -82,6 +83,7 @@ def distribute_total_value(group):
     for event in group["events"]:
         value = round((total_value * event["weight"]) / total_weight, 2)
         distrib_event = {
+            "id": event["id"],
             "event_time": event["event_time"],
             "group_no": event["group_no"],
             "weight": event["weight"],
