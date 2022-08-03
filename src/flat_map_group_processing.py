@@ -4,7 +4,7 @@ import re
 import pyspark
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DecimalType, TimestampType
+from pyspark.sql.types import IntegerType, DecimalType, TimestampType
 from decimal import Context
 
 # Create a Spark session; get its Spark context.
@@ -16,7 +16,6 @@ sc = SparkContext.getOrCreate()
 script_dir = os.path.abspath(os.path.dirname(__file__))
 script_parent_dir = os.path.dirname(script_dir)
 test_input_dir = os.path.join(script_parent_dir, "test_input")
-test_output_dir = os.path.join(script_parent_dir, "test_output")
 
 # Read groups CSV file; adjust its schema; show its contents.
 groupsDF = spark.read.option("header", True).csv(os.path.join(test_input_dir, "flat_map_group_processing_groups.csv"))
