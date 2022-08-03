@@ -19,10 +19,16 @@ This Spark job creates a DataFrame with a schema and some data, create a tempora
 ./cleanup ; spark-submit src/create_data_frame_read_write_parquet_and_csv.py
 ```
 
-## Executing calculations in parallel
+## Executing calculations in parallel, using flatMap()
 This Spark job uses flatMap() to execute calculation jobs in parallel across a Spark cluster, passing a lookup table to the workers as a broadcast variable.
 ```console
 spark-submit src/flat_map_with_broadcast_var.py
+```
+
+## Process groups of events, in parallel, using flatMap()
+This Spark job takes as input a number of groups and their corresponding total values, and a list of events, with each event belonging to one group.  It then uses flatMap() to execute calculation jobs in parallel across a Spark cluster, where each job corresponds to a single group.  Each job distributes the group's total value across the events in that group based on each event's weight.
+```console
+spark-submit src/flat_map_group_processing.py
 ```
 
 ## Clean up output files which were created by demos
