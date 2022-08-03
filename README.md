@@ -1,7 +1,7 @@
 # Spark Examples
 Examples of how to use Apache Spark to do various data processing tasks, with the workload spread across a Spark cluster.
 
-## Install prerequisiets (Mac)
+## Install prerequisites (Mac)
 
 1. Install Homebrew.  See here: https://brew.sh/
 2. Install Apache Spark and Python3.
