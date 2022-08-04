@@ -182,7 +182,7 @@ select g.*, g.total_value - gt.dist_total_value as rounding_error, gm.id
 from groups g
 inner join (select group_no, sum(value) as dist_total_value from sqldistrib group by group_no) gt on gt.group_no = g.group_no
 inner join (
-  select * from (select id, group_no, row_number() over (partition by group_no order by abs(value) desc) as rn from sqldistrib) where rn = 1
+  select * from (select id, group_no, row_number() over (partition by group_no order by abs(value) desc, event_time, id) as rn from sqldistrib) where rn = 1
 ) gm on gm.group_no = g.group_no
 where g.total_value <> gt.dist_total_value
 order by g.group_no
