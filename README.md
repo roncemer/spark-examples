@@ -25,7 +25,7 @@ This Spark job uses flatMap() to execute calculation jobs in parallel across a S
 spark-submit src/flat_map_with_broadcast_var.py
 ```
 
-## Group value distribution among events in the group based on weights
+## Group value distribution among events in the group, based on event weights
 The problem: Given multiple groups and multiple events within each group, distribute the total value for each group to events in the group based on the events' relative weights.
 
 This Spark job takes as input a number of groups and their corresponding total values, and a list of events, with each event belonging to one group.  It demonstrates two methods to implement such an algorithm.
