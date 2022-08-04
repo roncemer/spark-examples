@@ -10,6 +10,7 @@ from pyspark.sql.types import StructType, StructField, StringType, LongType
 appName = re.sub("\.py$", "", os.path.basename(__file__))
 spark = SparkSession.builder.appName(re.sub("\.py$", "", os.path.basename(__file__))).getOrCreate()
 sc = SparkContext.getOrCreate()
+sc.setLogLevel("WARN")
 
 # Calculate some paths relative to the current source file.
 script_dir = os.path.abspath(os.path.dirname(__file__))

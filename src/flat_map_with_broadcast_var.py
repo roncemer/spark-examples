@@ -11,6 +11,7 @@ from decimal import Context
 appName = re.sub("\.py$", "", os.path.basename(__file__))
 spark = SparkSession.builder.appName(re.sub("\.py$", "", os.path.basename(__file__))).getOrCreate()
 sc = SparkContext.getOrCreate()
+sc.setLogLevel("WARN")
 
 # Define employees, their departments, and yearly gross pay.
 employees = [
