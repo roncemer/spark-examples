@@ -28,7 +28,9 @@ spark-submit src/flat_map_with_broadcast_var.py
 ## Group value distribution among events in the group, based on event weights
 The problem: Given multiple groups and multiple events within each group, distribute the total value for each group to events in the group based on the events' relative weights.
 
-This Spark job takes as input a number of groups and their corresponding total values, and a list of events, with each event belonging to one group.  It demonstrates two methods to implement such an algorithm.
+This Spark job takes as input a number of groups and their corresponding total values, and a list of events, with each event belonging to one group.  Then, for each group, it uses the relative weights for each of the events in the group to determine an individual event's share of the total value of the group.  In other words, for each group, the group's total value is distributed across the events in that group based on the events' weights relative to one another.
+
+This Spark job demonstrates two methods to implement such an algorithm.
 
 Method #1 builds an RDD with one row for each group, containing the group number, the total value for the group, and the list of events in that group.  Then, using that RDD, it calls flatMap() with a lambda which calls a function once per group, distributing those function calls across the cluster.  Each function call distributes the total value for each group to the events in that group.
 
