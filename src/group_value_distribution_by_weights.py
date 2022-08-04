@@ -62,25 +62,36 @@ df.show()
 # and the list of events in that group.  Then, using that RDD, it calls flatMap() with a lambda which calls a
 # function once per group, distributing those function calls across the cluster.  Each function call distributes the
 # total value for each group to the events in that group.
-# PRO: Pretty fast as long as there aren't a lot of groups.
+# PRO: Pretty fast.
 # PRO: Parallelizable on a per-group basis (multiple groups simultaneously being processed on different nodes or
 #      processes within the Spark cluster).
-# CON: Requires that all of the events for a given group fit in memory on the driver node / process, because we have
-#      to call collect() on the RDD which contains all of the events for the current group.
-# CON: Requires a "for" loop in the setup to iterate over each group and query the events for that group.'
-#      This setup overhead could possibly negate the parallelism at the group level.
+# CON: Requires that all of the events for a given group fit in memory on the driver node / process, because each
+#      successive call to reduce_groups() is combining more and more groups and their events in memory, and the full
+#      list is sent back to the driver node / process at the end, and must fit in its memory as a list (not an RDD).
+#      An RDD would be spread across the entire cluster, but a list is just a normal Python object, and must fit in
+#      the memory of whatever node / process on which it exists.  In the case of the final reduced list, which is
+#      one element (a dict) per group, with another list of events inside each group dict, the entire thing must fit
+#      in the memory of the driver node / process.
 # ==================================================================================================================
 
 # Build the groups.
-groupsRDD = None
-for g in groupsDF.collect():
-    edf = spark.sql(f"select * from events where group_no = {g.group_no} order by event_time, id")
-    events = edf.rdd.map(lambda e: {"id": e.id, "event_time": e.event_time, "group_no": e.group_no, "weight": float(e.weight)}).collect()
-    newGroupRDD = spark.sparkContext.parallelize([{"group_no": g.group_no, "total_value": float(g.total_value), "events": events}])
-    if groupsRDD is None:
-        groupsRDD = newGroupRDD
-    else:
-        groupsRDD = groupsRDD.union(newGroupRDD)
+def reduce_groups(a, b):
+    groups_by_group_no = {}
+    for grp in [*a, *b]:
+        group_no = grp["group_no"]
+        if group_no in groups_by_group_no.keys():
+            groups_by_group_no[group_no]["events"].extend(grp["events"])
+        else:
+            groups_by_group_no[group_no] = grp
+    return groups_by_group_no.values()
+
+df = spark.sql("""
+select e.*, g.total_value
+from events e
+inner join groups g on g.group_no = e.group_no
+order by e.group_no, e.event_time
+""")
+groupsRDD = spark.sparkContext.parallelize(df.rdd.map(lambda e: [{"group_no": e.group_no, "total_value": float(e.total_value), "events": [{"id": e.id, "event_time": e.event_time, "group_no": e.group_no, "weight": float(e.weight)}]}]).reduce(reduce_groups))
 
 # Define a function for the flatMap() lambda to call to distribute the revenue for each group.
 def distribute_total_value(group):

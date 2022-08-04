@@ -32,7 +32,7 @@ This Spark job takes as input a number of groups and their corresponding total v
 
 This Spark job demonstrates two methods to implement such an algorithm.
 
-Method #1 builds an RDD with one row for each group, containing the group number, the total value for the group, and the list of events in that group.  Then, using that RDD, it calls flatMap() with a lambda which calls a function once per group, distributing those function calls across the cluster.  Each function call distributes the total value for each group to the events in that group.
+Method #1 uses a Spark SQL join query and map() / reduce() / parallelize() to create an RDD with one row for each group, containing the group number, the total value for the group, and the list of events in that group.  Then, using that RDD, it calls flatMap() with a lambda which calls a function once per group, distributing those function calls across the cluster.  Each function call distributes the total value for each group to the events in that group.
 
 Method #2 uses Spark SQL and a three-step process:
   1. Do a rough distribution, ignoring rounding error, using a join query.
