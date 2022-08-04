@@ -35,6 +35,9 @@ Method #2 uses Spark SQL and a three-step process:
   2. For each group, calculate the rounding error and find the event with the largest absolute value.
   3. Add the rounding errors to the correct events by using a left join between the rough-distributed events and the rounding error table.
 
+After both methods have executed, the two resulting DataFrames are subtracted from each other, and the non-matching rows are shown.  Since the results are both empty, it is proven that both methods produce exactly the same result.
+
+To run the job:
 ```console
 spark-submit src/group_value_distribution_by_weights.py
 ```
