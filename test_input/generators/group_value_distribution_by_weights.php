@@ -17,7 +17,7 @@ for ($i = 0; $i < 1000; $i++) {
 }
 usort($events, 'event_time_comparator');
 
-$fp = fopen(dirname(__DIR__).'/flat_map_group_processing_events.csv.new', 'w');
+$fp = fopen(dirname(__DIR__).'/group_value_distribution_by_weights_events.csv.new', 'w');
 fputs($fp, "id,event_time,group_no,weight\n");
 $id = 100000 + mt_rand(1, 100000);
 foreach ($events as $event) {
@@ -25,7 +25,7 @@ foreach ($events as $event) {
 }
 fclose($fp);
 
-$fp = fopen(dirname(__DIR__).'/flat_map_group_processing_groups.csv.new', 'w');
+$fp = fopen(dirname(__DIR__).'/group_value_distribution_by_weights_groups.csv.new', 'w');
 fputs($fp, "group_no,total_value\n");
 for ($group_no = 1; $group_no <= 10; $group_no++) {
     $total_value = (500 + mt_rand(0, 9500)) * 0.01;

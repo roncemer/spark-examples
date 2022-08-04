@@ -25,10 +25,18 @@ This Spark job uses flatMap() to execute calculation jobs in parallel across a S
 spark-submit src/flat_map_with_broadcast_var.py
 ```
 
-## Process groups of events in parallel, using flatMap()
-This Spark job takes as input a number of groups and their corresponding total values, and a list of events, with each event belonging to one group.  It then uses flatMap() to execute calculation jobs in parallel across a Spark cluster, where each job corresponds to a single group.  Each job distributes the group's total value across the events in that group based on each event's weight.
+## Distribute the total values of groups to events in the groups based on event's weights
+This Spark job takes as input a number of groups and their corresponding total values, and a list of events, with each event belonging to one group.  It demonstrates two methods to implement such an algorithm.
+
+Method #1 builds an RDD with one row for each group, containing the group number, the total value for the group, and the list of events in that group.  Then, using that RDD, it calls flatMap() with a lambda which calls a function once per group, distributing those function calls across the cluster.  Each function call distributes the total value for each group to the events in that group.
+
+Method #2 uses Spark SQL and a three-step process:
+  1. Do a rough distribution, ignoring rounding error, using a join query.
+  2. For each group, calculate the rounding error and find the event with the largest absolute value.
+  3. Add the rounding errors to the correct events by using a left join between the rough-distributed events and the rounding error table.
+
 ```console
-spark-submit src/flat_map_group_processing.py
+spark-submit src/group_value_distribution_by_weights.py
 ```
 
 ## Clean up output files which were created by demos

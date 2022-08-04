@@ -19,7 +19,7 @@ script_parent_dir = os.path.dirname(script_dir)
 test_input_dir = os.path.join(script_parent_dir, "test_input")
 
 # Read groups CSV file; adjust its schema; show its contents.
-groupsDF = spark.read.option("header", True).csv(os.path.join(test_input_dir, "flat_map_group_processing_groups.csv"))
+groupsDF = spark.read.option("header", True).csv(os.path.join(test_input_dir, "group_value_distribution_by_weights_groups.csv"))
 groupsDF = (
     groupsDF.withColumn("group_no_new", groupsDF["group_no"].cast(LongType())).drop("group_no").withColumnRenamed("group_no_new", "group_no")
     .withColumn("total_value_new", groupsDF["total_value"].cast(DecimalType(16, 2))).drop("total_value").withColumnRenamed("total_value_new", "total_value")
@@ -29,7 +29,7 @@ groupsDF.printSchema()
 groupsDF.show()
 
 # Read events CSV file; adjust its schema; show its contents.
-eventsDF = spark.read.option("header", True).csv(os.path.join(test_input_dir, "flat_map_group_processing_events.csv"))
+eventsDF = spark.read.option("header", True).csv(os.path.join(test_input_dir, "group_value_distribution_by_weights_events.csv"))
 eventsDF = (
     eventsDF.withColumn("id_new", eventsDF["id"].cast(LongType())).drop("id").withColumnRenamed("id_new", "id")
     .withColumn("event_time_new", eventsDF["event_time"].cast(TimestampType())).drop("event_time").withColumnRenamed("event_time_new", "event_time")
@@ -60,8 +60,8 @@ df.show()
 # Method #1 for distributing the total value for each group to the events in the group based on each event's weight.
 # This method builds an RDD with one row for each group, containing the group number, the total value for the group,
 # and the list of events in that group.  Then, using that RDD, it calls flatMap() with a lambda which calls a
-# a function once per group, distributing those function calls across the cluster.  Each function call distributes
-# the total value for each group to the events in that group.
+# function once per group, distributing those function calls across the cluster.  Each function call distributes the
+# total value for each group to the events in that group.
 # PRO: Pretty fast as long as there aren't a lot of groups.
 # PRO: Parallelizable on a per-group basis (multiple groups simultaneously being processed on different nodes or
 #      processes within the Spark cluster).
