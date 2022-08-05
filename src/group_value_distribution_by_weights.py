@@ -1,11 +1,32 @@
 import sys
 import os
 import re
+import argparse
 import pyspark
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
 from pyspark.sql.types import LongType, DecimalType, TimestampType
 from decimal import Context
+
+# Parse optional command-line arguments.
+def strToBool(s):
+    try:
+        if int(s) != 0:
+            return True
+    except:
+        pass
+    if s.lower() in ["t", "true", "y", "yes"]:
+        return True
+    return False
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--conserve-driver-memory", help="Conserve driver memory when building groups for flatMap() distribution.")
+args = parser.parse_args()
+print(type(args))
+print(args)
+conserveDriverMemoryWhenBuildingGroups = False
+if args.conserve_driver_memory:
+    conserveDriverMemoryWhenBuildingGroups = strToBool(args.conserve_driver_memory.lower())
 
 # Create a Spark session; get its Spark context.
 appName = re.sub("\.py$", "", os.path.basename(__file__))
@@ -41,8 +62,8 @@ eventsDF.printSchema()
 eventsDF.show(n=10000)
 
 # Create temporary views.
-groupsDF.createOrReplaceTempView('groups');
-eventsDF.createOrReplaceTempView('events');
+groupsDF.createOrReplaceTempView("groups");
+eventsDF.createOrReplaceTempView("events");
 
 # Show the number of input events.
 df = spark.sql("select count(*) as num_input_events from events")
@@ -65,25 +86,47 @@ df.show()
 # PRO: Pretty fast.
 # PRO: Parallelizable on a per-group basis (multiple groups simultaneously being processed on different nodes or
 #      processes within the Spark cluster).
-# CON: Requires that all of the events for a given group fit in memory on the driver node / process, because each
-#      successive call to reduce_groups() is combining more and more groups and their events in memory, and the full
-#      list is sent back to the driver node / process at the end, and must fit in its memory as a list (not an RDD).
-#      An RDD would be spread across the entire cluster, but a list is just a normal Python object, and must fit in
-#      the memory of whatever node / process on which it exists.  In the case of the final reduced list, which is
-#      one element (a dict) per group, with another list of events inside each group dict, the entire thing must fit
-#      in the memory of the driver node / process.
+# CON: Requires that all of the events for all groups (or at least a given group) fit in memory on the driver node /
+#      process, because each successive call to reduceGroups() is combining more and more groups and their events in
+#      memory, and the full list is sent back to the driver node / process at the end, and must fit in its memory as
+#      a list (not an RDD).  An RDD would be spread across the entire cluster, but a list is just a normal Python
+#      object, and must fit in the memory of whatever node / process on which it exists.  In the case of the final
+#      reduced list, which is one element (a dict) per group, with another list of events inside each group dict,
+#      the entire thing must fit in the memory of the driver node / process.
+# NOTE: There is a command-line switch which causes the setup to only keep one group in memory at a time on the
+#      driver node/process.  By turning this feature on, the setup takes longer, but it reduces the probability that
+#      the driver node / process will run out of memory because it avoids trying to fit all groups and their events
+#      into memory simultaneously on the driver node / process.  Instead, it builds one group at a time and
+#      immediately converts that group and its events to an RDD which is spread across the cluster, and then appends
+#      that RDD to the RDD containing all groups, which is also spread across the cluster.
+#      To enable this functionality, add the following to the end of the spark-submit command, after the name of the
+#      Spark notebook:
+#          --conserve-driver-memory true
 # ==================================================================================================================
 
+# Define a function to take a DataFrame containing events belonging to groups, and the total value for the group
+# to which each event belongs, and return a list of distinct groups, where each group also contains a list of the
+# events belonging to that group.
+def eventsAndGroupTotalValuesToGroups(df):
+    # Define a function to reduce two lists of groups and their events, combining the events of
+    # groups with the same group_no into a single group with the combined list of events.
+    def reduceGroups(a, b):
+        groups_by_group_no = {}
+        for grp in [*a, *b]:
+            group_no = grp["group_no"]
+            if group_no in groups_by_group_no.keys():
+                groups_by_group_no[group_no]["events"].extend(grp["events"])
+            else:
+                groups_by_group_no[group_no] = grp
+        return groups_by_group_no.values()
+
+    return df.rdd.map(lambda e: [{
+        "group_no": e.group_no,
+        "total_value": float(e.total_value),
+        "events": [{"id": e.id, "event_time": e.event_time, "group_no": e.group_no, "weight": float(e.weight)}]
+    }]).reduce(reduceGroups)
+
 # Build the groups.
-def reduce_groups(a, b):
-    groups_by_group_no = {}
-    for grp in [*a, *b]:
-        group_no = grp["group_no"]
-        if group_no in groups_by_group_no.keys():
-            groups_by_group_no[group_no]["events"].extend(grp["events"])
-        else:
-            groups_by_group_no[group_no] = grp
-    return groups_by_group_no.values()
 
 df = spark.sql("""
 select e.*, g.total_value
@@ -91,10 +134,25 @@ from events e
 inner join groups g on g.group_no = e.group_no
 order by e.group_no, e.event_time
 """)
-groupsRDD = spark.sparkContext.parallelize(df.rdd.map(lambda e: [{"group_no": e.group_no, "total_value": float(e.total_value), "events": [{"id": e.id, "event_time": e.event_time, "group_no": e.group_no, "weight": float(e.weight)}]}]).reduce(reduce_groups))
 
-# Define a function for the flatMap() lambda to call to distribute the revenue for each group.
-def distribute_total_value(group):
+if conserveDriverMemoryWhenBuildingGroups:
+    # We're conserving driver memory.  Build each group separately, convert to an RDD, and merge that into the RDD for all groups.
+    groupsRDD = None
+    for group_no in df.select("group_no").distinct().sort("group_no").rdd.flatMap(lambda x: x).collect():
+        print("Setting up group", group_no)
+        grdd = spark.sparkContext.parallelize(eventsAndGroupTotalValuesToGroups(df.filter(df.group_no == group_no)))
+        if groupsRDD is None:
+            groupsRDD = grdd
+        else:
+            groupsRDD = groupsRDD.union(grdd)
+    if groupsRDD is None:
+        groupsRDD = sc.emptyRDD()
+else:
+    # We're not conserving driver memory.  Build all groups at once in memory, then convert to an RDD.
+    groupsRDD = spark.sparkContext.parallelize(eventsAndGroupTotalValuesToGroups(df))
+
+# Define a function to distribute the revenue for a single group to the events in that group.
+def distributeTotalValue(group):
     total_value = group["total_value"]
 
     # Calculate the total weight for all events in the group.
@@ -130,7 +188,7 @@ def distribute_total_value(group):
     return distrib_events
 
 # Distribute the revenue in parallel, using flatMap().
-fmdistribRDD = groupsRDD.flatMap(lambda group: distribute_total_value(group))
+fmdistribRDD = groupsRDD.flatMap(lambda group: distributeTotalValue(group))
 fmdistribDF = fmdistribRDD.toDF()
 fmdistribDF = (
     fmdistribDF.withColumn("weight_new", fmdistribDF["weight"].cast(DecimalType(16, 4))).drop("weight").withColumnRenamed("weight_new", "weight")
@@ -141,7 +199,7 @@ fmdistribDF = fmdistribDF.select("id", "event_time", "group_no", "weight", "valu
 print("Events with distributed values:")
 fmdistribDF.printSchema()
 fmdistribDF.show(n=10000)
-fmdistribDF.createOrReplaceTempView('fmdistrib');
+fmdistribDF.createOrReplaceTempView("fmdistrib");
 
 # Show total of value across all flatMap() distributed events.
 df = spark.sql("select sum(value) as total_flat_map_distrib_value from fmdistrib")
@@ -179,7 +237,7 @@ order by e.group_no, e.event_time, e.id
 print("First-pass SQL distribution:")
 sqldistribDF.printSchema()
 sqldistribDF.show(n=10000)
-sqldistribDF.createOrReplaceTempView('sqldistrib');
+sqldistribDF.createOrReplaceTempView("sqldistrib");
 
 # Show total of value across all first-pass SQL distributed events.
 df = spark.sql("select sum(value) as total_sql_first_step_distrib_value from sqldistrib")
@@ -201,7 +259,7 @@ order by g.group_no
 print("Rounding error and largest event id for each group:")
 roundingerrDF.printSchema()
 roundingerrDF.show()
-roundingerrDF.createOrReplaceTempView('roundingerr');
+roundingerrDF.createOrReplaceTempView("roundingerr");
 
 # Show the total rounding error.
 df = spark.sql("select sum(rounding_error) as total_rounding_error from roundingerr")
@@ -219,7 +277,7 @@ order by e.group_no, e.event_time, e.id
 print("SQL distribution after fixing rounding error:")
 sqldistribDF.printSchema()
 sqldistribDF.show(n=10000)
-sqldistribDF.createOrReplaceTempView('sqldistrib');
+sqldistribDF.createOrReplaceTempView("sqldistrib");
 
 # Show total of value across all SQL distributed events.
 df = spark.sql("select sum(value) as total_sql_distrib_value from sqldistrib")

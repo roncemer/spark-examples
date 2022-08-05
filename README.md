@@ -46,6 +46,11 @@ To run the job:
 spark-submit src/group_value_distribution_by_weights.py
 ```
 
+The Method #1 implementation also has an option to only fit one group and its events into memory on the driver node / process, reducing the probability that the job will fail with an out-of-memory error.  With this option turned on, the setup takes a bit longer to run because each group is built up separately and then converted to an RDD which is distributed across the cluster.  To run the job with this option enabled:
+```console
+spark-submit src/group_value_distribution_by_weights.py --conserve-driver-memory true
+```
+
 ## Clean up output files which were created by demos
 This script cleans up the files which are created by demos which save files.  It should be run before any demos which creates output files.
 ```console
