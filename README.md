@@ -78,58 +78,64 @@ spark-submit src/structured_streaming_word_count.py
 ```
 
 Wait until you get the first (empty) word count report in the Spark console:
-> -------------------------------------------
-> Batch: 0
-> -------------------------------------------
-> +----+-----+
-> |word|count|
-> +----+-----+
-> +----+-----+
+```text
+-------------------------------------------
+Batch: 0
+-------------------------------------------
++----+-----+
+|word|count|
++----+-----+
++----+-----+
+```
 
 Copy and paste the following text into the Netcat window, then press Enter:
 > hello.  this is a test; i am testing THIS thing.
 
 After a few seconds, you should see the first non-empty word count report in the Spark console:
-> -------------------------------------------
-> Batch: 1
-> -------------------------------------------
-> +-------+-----+
-> |   word|count|
-> +-------+-----+
-> |   this|    2|
-> |      a|    1|
-> |     am|    1|
-> |  hello|    1|
-> |      i|    1|
-> |     is|    1|
-> |   test|    1|
-> |testing|    1|
-> |  thing|    1|
-> +-------+-----+
+```text
+-------------------------------------------
+Batch: 1
+-------------------------------------------
++-------+-----+
+|   word|count|
++-------+-----+
+|   this|    2|
+|      a|    1|
+|     am|    1|
+|  hello|    1|
+|      i|    1|
+|     is|    1|
+|   test|    1|
+|testing|    1|
+|  thing|    1|
++-------+-----+
+```
 
 Next copy and paste the following text into the Netcat window, then press Enter:
 > hello.  this is a test; i am testing THIS thing.  i hope it works.
 
 After a few seconds, you should see this:
-> -------------------------------------------
-> Batch: 2
-> -------------------------------------------
-> +-------+-----+
-> |   word|count|
-> +-------+-----+
-> |   this|    4|
-> |      i|    3|
-> |      a|    2|
-> |     am|    2|
-> |  hello|    2|
-> |     is|    2|
-> |   test|    2|
-> |testing|    2|
-> |  thing|    2|
-> |   hope|    1|
-> |     it|    1|
-> |  works|    1|
-> +-------+-----+
+```text
+-------------------------------------------
+Batch: 2
+-------------------------------------------
++-------+-----+
+|   word|count|
++-------+-----+
+|   this|    4|
+|      i|    3|
+|      a|    2|
+|     am|    2|
+|  hello|    2|
+|     is|    2|
+|   test|    2|
+|testing|    2|
+|  thing|    2|
+|   hope|    1|
+|     it|    1|
+|  works|    1|
++-------+-----+
+```
 
 You can stop the Spark job by pressing *Control+C* in its window, and stop Netcat by pressing *Control+C* in its window.
 
