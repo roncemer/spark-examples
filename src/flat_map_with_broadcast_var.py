@@ -9,7 +9,7 @@ from decimal import Context
 
 # Create a Spark session; get its Spark context.
 appName = re.sub("\.py$", "", os.path.basename(__file__))
-spark = SparkSession.builder.appName(re.sub("\.py$", "", os.path.basename(__file__))).getOrCreate()
+spark = SparkSession.builder.appName(appName).getOrCreate()
 sc = SparkContext.getOrCreate()
 sc.setLogLevel("WARN")
 
