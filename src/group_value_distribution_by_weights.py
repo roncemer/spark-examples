@@ -6,7 +6,6 @@ import pyspark
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
 from pyspark.sql.types import LongType, DecimalType, TimestampType
-from decimal import Context
 
 # Parse optional command-line arguments.
 def strToBool(s):
