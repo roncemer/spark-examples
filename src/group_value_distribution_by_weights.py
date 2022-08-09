@@ -61,8 +61,8 @@ eventsDF.printSchema()
 eventsDF.show(n=10000)
 
 # Create temporary views.
-groupsDF.createOrReplaceTempView("groups");
-eventsDF.createOrReplaceTempView("events");
+groupsDF.createOrReplaceTempView("groups")
+eventsDF.createOrReplaceTempView("events")
 
 # Show the number of input events.
 df = spark.sql("select count(*) as num_input_events from events")
@@ -198,7 +198,7 @@ fmdistribDF = fmdistribDF.select("id", "event_time", "group_no", "weight", "valu
 print("Events with distributed values:")
 fmdistribDF.printSchema()
 fmdistribDF.show(n=10000)
-fmdistribDF.createOrReplaceTempView("fmdistrib");
+fmdistribDF.createOrReplaceTempView("fmdistrib")
 
 # Show total of value across all flatMap() distributed events.
 df = spark.sql("select sum(value) as total_flat_map_distrib_value from fmdistrib")
@@ -236,7 +236,7 @@ order by e.group_no, e.event_time, e.id
 print("First-pass SQL distribution:")
 sqldistribDF.printSchema()
 sqldistribDF.show(n=10000)
-sqldistribDF.createOrReplaceTempView("sqldistrib");
+sqldistribDF.createOrReplaceTempView("sqldistrib")
 
 # Show total of value across all first-pass SQL distributed events.
 df = spark.sql("select sum(value) as total_sql_first_step_distrib_value from sqldistrib")
@@ -258,7 +258,7 @@ order by g.group_no
 print("Rounding error and largest event id for each group:")
 roundingerrDF.printSchema()
 roundingerrDF.show()
-roundingerrDF.createOrReplaceTempView("roundingerr");
+roundingerrDF.createOrReplaceTempView("roundingerr")
 
 # Show the total rounding error.
 df = spark.sql("select sum(rounding_error) as total_rounding_error from roundingerr")
@@ -276,7 +276,7 @@ order by e.group_no, e.event_time, e.id
 print("SQL distribution after fixing rounding error:")
 sqldistribDF.printSchema()
 sqldistribDF.show(n=10000)
-sqldistribDF.createOrReplaceTempView("sqldistrib");
+sqldistribDF.createOrReplaceTempView("sqldistrib")
 
 # Show total of value across all SQL distributed events.
 df = spark.sql("select sum(value) as total_sql_distrib_value from sqldistrib")
