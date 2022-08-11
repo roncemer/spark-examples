@@ -1,11 +1,3 @@
-
-###version: "3.9"
-###services:
-###  spark:
-###    build: .
-###    #ports:
-###    #  - "8000:5000"
-
 # https://dev.to/mvillarrealb/creating-a-spark-standalone-cluster-with-docker-and-docker-compose-2021-update-6l4
 
 version: "3.3"
@@ -16,8 +8,7 @@ services:
       - "9090:8080"
       - "7077:7077"
     volumes:
-       - ./apps:/opt/spark-apps
-       - ./data:/opt/spark-data
+       - ..:/opt/spark-examples
     environment:
       - SPARK_LOCAL_IP=spark-master
       - SPARK_WORKLOAD=master
@@ -37,8 +28,7 @@ services:
       - SPARK_WORKLOAD=worker
       - SPARK_LOCAL_IP=spark-worker-a
     volumes:
-       - ./apps:/opt/spark-apps
-       - ./data:/opt/spark-data
+       - ..:/opt/spark-examples
   spark-worker-b:
     image: cluster-apache-spark:3.3.0
     ports:
@@ -55,8 +45,7 @@ services:
       - SPARK_WORKLOAD=worker
       - SPARK_LOCAL_IP=spark-worker-b
     volumes:
-        - ./apps:/opt/spark-apps
-        - ./data:/opt/spark-data
+       - ..:/opt/spark-examples
   demo-database:
     image: postgres:11.7-alpine
     ports: 

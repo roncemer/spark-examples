@@ -1,15 +1,10 @@
-### FROM apache/spark-py
-### #FROM gcr.io/datamechanics/spark:platform-3.3-latest
-### 
-### RUN pip3 install pyspark
-
 # https://dev.to/mvillarrealb/creating-a-spark-standalone-cluster-with-docker-and-docker-compose-2021-update-6l4
 
 # builder step used to download and configure spark environment
 FROM openjdk:18.0.2-jdk-slim-buster as builder
 
 # Add Dependencies for PySpark
-RUN apt-get update && apt-get install -y curl vim wget software-properties-common ssh net-tools ca-certificates python3 python3-pip python3-numpy python3-matplotlib python3-scipy python3-pandas python3-simpy
+RUN apt-get update && apt-get install -y curl vim wget software-properties-common ssh net-tools netcat ca-certificates python3 python3-pip python3-numpy python3-matplotlib python3-scipy python3-pandas python3-simpy
 
 RUN update-alternatives --install "/usr/bin/python" "python" "$(which python3)" 1
 

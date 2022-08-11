@@ -8,18 +8,16 @@ If you're on a Mac, you can run most of these demos locally, directly on the Mac
 
 ### Installing Prerequisites to run on Docker
 
+This section is based on this article: https://dev.to/mvillarrealb/creating-a-spark-standalone-cluster-with-docker-and-docker-compose-2021-update-6l4
+
 1. Install Docker and docker-compose.
    If you're running on a laptop or desktop computer with an operating system other than Linux, install Docker Deskop here: https://www.docker.com/products/docker-desktop/
    If you're running on Ubuntu Linux, follow the instructions here: https://docs.docker.com/engine/install/ubuntu/
    If you're running on Debian Linux, follow the instructions here: https://docs.docker.com/engine/install/debian/
 
-2. Install Spark locally, so that we can use the *spark-submit* command.
-   For Mac:
-   ```console
-   brew install apache-spark
-   ```
+   If Docker isn't running yet, start it.  If you're using Docker Desktop, start it, open up its dashboard, and make sure it's finished starting before proceeding.
 
-3. Build the Docker image and start the Spark stack.
+2. Build the Docker image and start the Spark stack.
 
    NOTE: If you're on a Mac, before running this step, turn off the AirPlay receiver, which listens on port 7000.
    Follow the instructions here: https://github.com/cookiecutter/cookiecutter-django/issues/3499
@@ -28,6 +26,25 @@ If you're on a Mac, you can run most of these demos locally, directly on the Mac
    ```console
    ./docker/build && ./docker/start
    ```
+
+3. You can monitor the master, worker 1 and worker 2 nodes using a browser:
+    * Master: http://localhost:9090/
+    * Worker 1: http://localhost:9091/
+    * Worker 2: http://localhost:9092/
+
+
+## Getting a bash shell in the Spark master node (Docker only)
+
+Submitting spark jobs on the Spark cluster in Docker will require getting a bash shell in the Spark master node container in Docker.  The following commands will put you into a bash shell in the correct container, get you into the same directory where this README.md file exists, and add Spark's bin directory to your PATH.
+
+```console
+docker exec -it docker-spark-master-1 /bin/bash
+cd /opt/spark-examples/
+export PATH="$PATH:/opt/spark/bin"
+```
+
+In this bash shell, you can run your the *spark-submit* commands listed below.
+
 
 ### Installing Prerequisites to run on Mac locally (except Delta Lake demo)
 
@@ -43,17 +60,17 @@ If you're on a Mac, you can run most of these demos locally, directly on the Mac
 
 ## Basic DataFrame handling, reading and writing Parquet and CSV files
 This Spark job creates a DataFrame with a schema and some data, create a temporary view, queries the temporary view, saves the results to a single-partition Parquet file, reads the Parquet file, saves to a single-partition CSV file, and reads the CSV file.
+
 ```console
 ./cleanup ; spark-submit src/create_data_frame_read_write_parquet_and_csv.py
 ```
 
-
 ## Execute calculations in parallel, using flatMap()
 This Spark job uses flatMap() to execute calculation jobs in parallel across a Spark cluster, passing a lookup table to the workers as a broadcast variable.
+
 ```console
 spark-submit src/flat_map_with_broadcast_var.py
 ```
-
 
 ## Group value distribution among events in the group, based on event weights
 The problem: Given multiple groups and multiple events within each group, distribute the total value for each group to events in the group based on the events' relative weights.
@@ -71,7 +88,6 @@ Method #2 uses Spark SQL and a three-step process:
 
 After both methods have executed, the two resulting DataFrames are subtracted from each other, and the non-matching rows are shown.  Since the results are both empty, it is proven that both methods produce exactly the same result.
 
-To run the job:
 ```console
 spark-submit src/group_value_distribution_by_weights.py
 ```
@@ -80,7 +96,6 @@ The Method #1 implementation also has an option to only fit one group and its ev
 ```console
 spark-submit src/group_value_distribution_by_weights.py --conserve-driver-memory true
 ```
-
 
 ## Read lines from a network socket, output a running word count by distinct words (Spark Structured Streaming)
 
@@ -94,12 +109,17 @@ following improvements were added:
   - avoid outputting the word count for an empty word (which occurs when two spaces occur together)
   - the output by descending word count, sub-sorted by word when there are two or more words with the same word count
 
-In a separate terminal window, start up a socket server using Netcat:
+In a separate terminal window on your local machine, start up a socket server using Netcat.
+For Docker:
+```console
+docker exec -it docker-spark-master-1 nc -l 9999
+```
+For standalone Spark on Mac:
 ```console
 nc -lk 9999
 ```
 
-Start up the Spark job:
+Run Spark job.
 ```console
 spark-submit src/structured_streaming_word_count.py
 ```
@@ -165,7 +185,6 @@ Batch: 2
 ```
 
 You can stop the Spark job by pressing *Control+C* in its window, and stop Netcat by pressing *Control+C* in its window.
-
 
 ## Clean up output files which were created by demos
 This script cleans up the files which are created by demos which save files.  It should be run before any demos which creates output files.
