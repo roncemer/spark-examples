@@ -117,7 +117,7 @@ def eventsAndGroupTotalValuesToGroups(df):
                 groups_by_group_no[group_no]["events"].extend(grp["events"])
             else:
                 groups_by_group_no[group_no] = grp
-        return groups_by_group_no.values()
+        return list(groups_by_group_no.values())
 
     return df.rdd.map(lambda e: [{
         "group_no": e.group_no,
