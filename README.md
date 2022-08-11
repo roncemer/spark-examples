@@ -112,14 +112,14 @@ following improvements were added:
 In a separate terminal window on your local machine, start up a socket server using Netcat.
 For Docker:
 ```console
-docker exec -it docker-spark-master-1 nc -l 9999
+docker exec -it docker-spark-master-1 nc -lk -p 9999
 ```
 For standalone Spark on Mac:
 ```console
 nc -lk 9999
 ```
 
-Run Spark job.
+Run the Spark job.
 ```console
 spark-submit src/structured_streaming_word_count.py
 ```
