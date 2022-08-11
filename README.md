@@ -1,7 +1,35 @@
 # Spark Examples
+
 Examples of how to use Apache Spark to do various data processing tasks, with the workload spread across a Spark cluster.
 
-## Install prerequisites (Mac)
+## Install Prerequisites
+
+If you're on a Mac, you can run most of these demos locally, directly on the Mac.  The main exception is the Delta Lake demo, which currently cannot be run on a Mac due to an incompatibility between Databricks' Delta Lake module and the version of Spark which is installed by Homebrew on Mac.  For all other platforms, and to run the Delta Lake demo, follow the instructions below to run Spark on Docker.
+
+### Installing Prerequisites to run on Docker
+
+1. Install Docker and docker-compose.
+   If you're running on a laptop or desktop computer with an operating system other than Linux, install Docker Deskop here: https://www.docker.com/products/docker-desktop/
+   If you're running on Ubuntu Linux, follow the instructions here: https://docs.docker.com/engine/install/ubuntu/
+   If you're running on Debian Linux, follow the instructions here: https://docs.docker.com/engine/install/debian/
+
+2. Install Spark locally, so that we can use the *spark-submit* command.
+   For Mac:
+   ```console
+   brew install apache-spark
+   ```
+
+3. Build the Docker image and start the Spark stack.
+
+   NOTE: If you're on a Mac, before running this step, turn off the AirPlay receiver, which listens on port 7000.
+   Follow the instructions here: https://github.com/cookiecutter/cookiecutter-django/issues/3499
+
+   Build the Docker image and start the Spark stack in Docker.
+   ```console
+   ./docker/build && ./docker/start
+   ```
+
+### Installing Prerequisites to run on Mac locally (except Delta Lake demo)
 
 1. Install Homebrew.  See here: https://brew.sh/
 2. Install Apache Spark and Python3.
@@ -12,7 +40,6 @@ Examples of how to use Apache Spark to do various data processing tasks, with th
    ```console
    pip3 install pyspark
    ```
-
 
 ## Basic DataFrame handling, reading and writing Parquet and CSV files
 This Spark job creates a DataFrame with a schema and some data, create a temporary view, queries the temporary view, saves the results to a single-partition Parquet file, reads the Parquet file, saves to a single-partition CSV file, and reads the CSV file.
@@ -144,4 +171,10 @@ You can stop the Spark job by pressing *Control+C* in its window, and stop Netca
 This script cleans up the files which are created by demos which save files.  It should be run before any demos which creates output files.
 ```console
 ./cleanup
+```
+
+## Stop the Docker stack
+If you're running in Docker, you can stop the stack with this command:
+```console
+./docker/stop
 ```
