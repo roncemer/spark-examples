@@ -93,13 +93,8 @@ following improvements were added:
   - the output by descending word count, sub-sorted by word when there are two or more words with the same word count
 
 In a separate terminal window on your local machine, start up a socket server using Netcat.
-For Docker:
 ```console
 docker exec -it docker-spark-master-1 nc -lk -p 9999
-```
-For standalone Spark on Mac:
-```console
-nc -lk 9999
 ```
 
 Run the Spark job.
