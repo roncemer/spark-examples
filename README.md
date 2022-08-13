@@ -162,7 +162,7 @@ Batch: 2
 +-------+-----+
 ```
 
-You can stop the Spark job by pressing *Control+C* in its window, and stop Netcat by pressing *Control+C* in its window.
+You can stop the Spark job by pressing *Control+C* in its window, and stop Netcat (if it doesn't stop automatically when the Spark job is stopped) by pressing *Control+C* in its window.
 
 ## Read and write a Delta Lake table
 ```console
