@@ -2,11 +2,7 @@
 
 Examples of how to use Apache Spark to do various data processing tasks, with the workload spread across a Spark cluster.
 
-## Install Prerequisites
-
-If you're on a Mac, you can run most of these demos locally, directly on the Mac.  The main exception is the Delta Lake demo, which currently cannot be run on a Mac due to an incompatibility between Databricks' Delta Lake module and the version of Spark which is installed by Homebrew on Mac.  For all other platforms, and to run the Delta Lake demo, follow the instructions below to run Spark on Docker.
-
-### Installing Prerequisites to run on Docker
+## Install Docker; build the Docker image; start the Spark cluster
 
 This section is based on this article: https://dev.to/mvillarrealb/creating-a-spark-standalone-cluster-with-docker-and-docker-compose-2021-update-6l4
 
@@ -33,7 +29,7 @@ This section is based on this article: https://dev.to/mvillarrealb/creating-a-sp
     * Worker 2: http://localhost:9092/
 
 
-## Getting a bash shell in the Spark master node (Docker only)
+## Getting a bash shell in the Spark master node
 
 Submitting spark jobs on the Spark cluster in Docker will require getting a bash shell in the Spark master node container in Docker.  The following commands will put you into a bash shell in the correct container, get you into the same directory where this README.md file exists, and add Spark's bin directory to your PATH.
 
@@ -44,18 +40,6 @@ export PATH="$PATH:/opt/spark/bin" ; cd /opt/spark-examples
 
 In this bash shell, you can run your the *spark-submit* commands listed below.
 
-
-### Installing Prerequisites to run on Mac locally without Docker
-
-1. Install Homebrew.  See here: https://brew.sh/
-2. Install Apache Spark and Python3.
-   ```console
-   brew install apache-spark python3
-   ```
-3. Install PySpark.
-   ```console
-   pip3 install pyspark==3.3.0
-   ```
 
 ## Basic DataFrame handling, reading and writing Parquet and CSV files
 This Spark job creates a DataFrame with a schema and some data, create a temporary view, queries the temporary view, saves the results to a single-partition Parquet file, reads the Parquet file, saves to a single-partition CSV file, and reads the CSV file.
