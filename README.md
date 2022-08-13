@@ -39,14 +39,13 @@ Submitting spark jobs on the Spark cluster in Docker will require getting a bash
 
 ```console
 docker exec -it docker-spark-master-1 /bin/bash
-cd /opt/spark-examples/
-export PATH="$PATH:/opt/spark/bin"
+export PATH="$PATH:/opt/spark/bin" ; cd /opt/spark-examples
 ```
 
 In this bash shell, you can run your the *spark-submit* commands listed below.
 
 
-### Installing Prerequisites to run on Mac locally (except Delta Lake demo)
+### Installing Prerequisites to run on Mac locally without Docker
 
 1. Install Homebrew.  See here: https://brew.sh/
 2. Install Apache Spark and Python3.
@@ -55,7 +54,7 @@ In this bash shell, you can run your the *spark-submit* commands listed below.
    ```
 3. Install PySpark.
    ```console
-   pip3 install pyspark
+   pip3 install pyspark==3.3.0
    ```
 
 ## Basic DataFrame handling, reading and writing Parquet and CSV files
@@ -185,6 +184,11 @@ Batch: 2
 ```
 
 You can stop the Spark job by pressing *Control+C* in its window, and stop Netcat by pressing *Control+C* in its window.
+
+## Read and write a Delta Lake table
+```console
+./cleanup ; spark-submit src/delta_table.py
+```
 
 ## Clean up output files which were created by demos
 This script cleans up the files which are created by demos which save files.  It should be run before any demos which creates output files.
