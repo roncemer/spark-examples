@@ -170,13 +170,15 @@ You can stop the Spark job by pressing *Control+C* in its window, and stop Netca
 ```
 
 ## Clean up output files which were created by demos
-This script cleans up the files which are created by demos which save files.  It should be run before any demos which creates output files.
+This script cleans up the files which are created by demos which save files.  It should be run before any demos which create output files.  It should also be run at the end to clean up any output files created by the demos.
 ```console
 ./cleanup
 ```
 
 ## Stop the Docker stack
-If you're running in Docker, you can stop the stack with this command:
+First, exit the bash shell in the Spark master node.  You can do this by entering the *exit* command, or pressing *Control+D*.
+
+Then , just stop the stack with this command:
 ```console
 ./docker/stop
 ```
