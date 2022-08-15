@@ -75,7 +75,9 @@ After both methods have executed, the two resulting DataFrames are subtracted fr
 spark-submit src/group_value_distribution_by_weights.py
 ```
 
-The Method #1 implementation also has an option to only fit one group and its events into memory on the driver node / process, reducing the probability that the job will fail with an out-of-memory error.  With this option turned on, the setup takes a bit longer to run because each group is built up separately and then converted to an RDD which is distributed across the cluster.  To run the job with this option enabled:
+The Method #1 implementation also has an option to only fit one group and its events into memory at a time on the driver process, reducing the probability that the job will fail with an out-of-memory error.  With this option turned on, the setup takes a bit longer to run because each group is built up separately and then converted to an RDD which is distributed across the cluster.  However, if you have only a few groups, and each group has many (hundreds of thousands or more) events, it can make sense to use this approach because the extra setup time would typically be counteracted by the parallel processing of the groups, and you don't get an out-of-memory error on the driver process because of trying to fit all of the events for all groups into the driver process' memory simultaneously.
+
+To run the job with the driver memory conservation option enabled:
 ```console
 spark-submit src/group_value_distribution_by_weights.py --conserve-driver-memory true
 ```
@@ -97,7 +99,7 @@ In a separate terminal window on your local machine, start up a socket server us
 docker exec -it docker-spark-master-1 nc -lk -p 9999
 ```
 
-Run the Spark job.
+Run the Spark job in the original terminal window.
 ```console
 spark-submit src/structured_streaming_word_count.py
 ```
