@@ -92,7 +92,7 @@ following improvements were added:
   - ignore case
   - filter non-alphanumeric/non-space characters
   - avoid outputting the word count for an empty word (which occurs when two spaces occur together)
-  - the output by descending word count, sub-sorted by word when there are two or more words with the same word count
+  - sort the output by descending word count, sub-sorted by word when there are two or more words with the same word count
 
 In a separate terminal window on your local machine, start up a socket server using Netcat.
 ```console
