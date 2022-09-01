@@ -16,7 +16,7 @@ This section is based on this article: https://dev.to/mvillarrealb/creating-a-sp
 2. Build the Docker image and start the Spark stack.
 
    NOTE: If you're on a Mac, before running this step, turn off the AirPlay receiver, which listens on port 7000.
-   Follow the instructions here: https://github.com/cookiecutter/cookiecutter-django/issues/3499
+   The setting is System Preferences > Sharing > AirPlay Receiver.  Just uncheck the checkbox, and that should turn it off.
 
    Build the Docker image and start the Spark stack in Docker.
    ```console
@@ -34,7 +34,7 @@ This section is based on this article: https://dev.to/mvillarrealb/creating-a-sp
 Submitting spark jobs on the Spark cluster in Docker will require getting a bash shell in the Spark master node container in Docker.  The following commands will put you into a bash shell in the correct container, get you into the same directory where this README.md file exists, and add Spark's bin directory to your PATH.
 
 ```console
-docker exec -it docker-spark-master-1 /bin/bash
+docker exec -it docker_spark-master_1 /bin/bash
 export PATH="$PATH:/opt/spark/bin" ; cd /opt/spark-examples
 ```
 
@@ -96,7 +96,7 @@ following improvements were added:
 
 In a separate terminal window on your local machine, start up a socket server using Netcat.
 ```console
-docker exec -it docker-spark-master-1 nc -lk -p 9999
+docker exec -it docker_spark-master_1 nc -lk -p 9999
 ```
 
 Run the Spark job in the original terminal window.
