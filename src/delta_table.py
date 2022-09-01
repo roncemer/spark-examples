@@ -1,11 +1,9 @@
-import sys
 import os
 import re
 import pyspark
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
 from pyspark.sql.types import StructType, StructField, StringType, LongType
-from delta import *
 
 # Create a Spark session; get its Spark context.
 appName = re.sub("\.py$", "", os.path.basename(__file__))

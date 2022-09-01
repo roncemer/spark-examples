@@ -6,7 +6,6 @@
 #   * avoid outputting the word count for an empty word (which occurs when two spaces occur together)
 #   * the output by descending word count, sub-sorted by word when there are two or more words with the same word count
 
-import sys
 import os
 import re
 import pyspark
