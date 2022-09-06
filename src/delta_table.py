@@ -35,7 +35,7 @@ sqlDF.printSchema()
 sqlDF.show()
 
 # Write a DataFrame to a Delta table inside a folder.
-delta_dir = os.path.join(test_output_dir, "delta", "languages_sorted")
+delta_dir = os.path.join(test_output_dir, "delta_lake", "languages_sorted")
 sqlDF.write.format("delta").save(delta_dir)
 
 # Read Delta; show its contents.

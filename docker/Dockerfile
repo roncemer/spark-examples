@@ -25,9 +25,9 @@ RUN wget --no-verbose -O apache-spark.tgz "https://archive.apache.org/dist/spark
 && tar -xf apache-spark.tgz -C /opt/spark --strip-components=1 \
 && rm apache-spark.tgz
 
-RUN echo "spark.jars.packages io.delta:delta-core_2.12:2.0.0" >> /opt/spark/conf/spark-defaults.conf
-RUN echo "spark.sql.extensions io.delta.sql.DeltaSparkSessionExtension" >> /opt/spark/conf/spark-defaults.conf
-RUN echo "spark.sql.catalog.spark_catalog org.apache.spark.sql.delta.catalog.DeltaCatalog" >> /opt/spark/conf/spark-defaults.conf
+#RUN echo "spark.jars.packages io.delta:delta-core_2.12:2.0.0" >> /opt/spark/conf/spark-defaults.conf
+#RUN echo "spark.sql.extensions io.delta.sql.DeltaSparkSessionExtension" >> /opt/spark/conf/spark-defaults.conf
+#RUN echo "spark.sql.catalog.spark_catalog org.apache.spark.sql.delta.catalog.DeltaCatalog" >> /opt/spark/conf/spark-defaults.conf
 
 RUN pip3 install pyspark==${SPARK_VERSION} delta-spark==${DELTA_VERSION}
 

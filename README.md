@@ -168,7 +168,7 @@ You can stop the Spark job by pressing *Control+C* in its window, and stop Netca
 
 ## Read and write a Delta Lake table
 ```console
-./cleanup ; spark-submit src/delta_table.py
+./cleanup ; spark-submit --packages "io.delta:delta-core_2.12:2.0.0" --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" src/delta_table.py
 ```
 
 ## Clean up output files which were created by demos
