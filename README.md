@@ -184,3 +184,13 @@ Then , just stop the stack with this command:
 ```console
 ./docker/stop
 ```
+
+If you have unused volumes hanging around in Docker, you can find them with this command:
+```console
+docker volume ls
+```
+
+And prune thm with this command:
+```console
+docker volume prune
+```
